@@ -5,15 +5,15 @@ import (
 )
 
 func main() {
-	cfg := pkgr.NewDefaultConfig()
+	cfg := installer.NewDefaultConfig()
 	cfg.ProjectName = "engine"
 	cfg.Compose = [][]byte{yml}
-	cfg.Install.Execs = []*pkgr.Exec{{
+	cfg.Install.Execs = []*installer.Exec{{
 		Service: "bblfshd",
 		Cmd:     []string{"bblfshctl", "driver", "install", "--all", "--update"},
 	}}
 
-	p, err := pkgr.NewProgram("engine-installer", cfg)
+	p, err := installer.New("engine-installer", cfg)
 	if err != nil {
 		panic(err)
 	}

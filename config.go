@@ -1,4 +1,4 @@
-package pkgr
+package installer
 
 import (
 	"context"

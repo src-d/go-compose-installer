@@ -1,4 +1,4 @@
-package pkgr
+package installer
 
 import (
 	"context"
@@ -9,11 +9,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Program struct {
+type Installer struct {
 	Parser *flags.Parser
 }
 
-func NewProgram(name string, cfg *Config) (*Program, error) {
+func New(name string, cfg *Config) (*Installer, error) {
 	p, err := NewProject(cfg)
 	if err != nil {
 		return nil, err
@@ -40,10 +40,10 @@ func NewProgram(name string, cfg *Config) (*Program, error) {
 		fmt.Sprintf(cfg.Uninstall.Messages.Description, cfg.ProjectName), "",
 		&UninstallCommand{Command: Command{p: p}},
 	)
-	return &Program{parser}, nil
+	return &Installer{parser}, nil
 }
 
-func (p *Program) Run() {
+func (p *Installer) Run() {
 	if _, err := p.Parser.Parse(); err != nil {
 		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
 			os.Exit(0)
