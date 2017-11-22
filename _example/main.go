@@ -5,7 +5,6 @@ import (
 )
 
 func main() {
-
 	c := &pkgr.Config{}
 	c.ProjectName = "engine"
 	c.Compose = [][]byte{yml}
@@ -15,6 +14,12 @@ func main() {
 		Failure:      "Failed to install Engine.",
 		Success:      "Successfully installed.",
 	}
+
+	c.Install.Execs = []*pkgr.Exec{{
+		Service: "bblfshd",
+		Cmd:     []string{"bblfshctl", "driver", "install", "--all", "--update"},
+	}}
+
 	c.Start.Messages = pkgr.Messages{
 		Description:  "Stars engine.",
 		Announcement: "Starting Engine...",
@@ -27,6 +32,11 @@ func main() {
 		Failure:      "Failed to stop Engine.",
 		Success:      "Engine stopped.",
 	}
+
+	c.Status.Messages = pkgr.Messages{
+		Description: "Show the status of engine.",
+	}
+
 	c.Uninstall.Messages = pkgr.Messages{
 		Description:  "Remove engine from your system.",
 		Announcement: "Uninstalling Engine...",
@@ -46,7 +56,7 @@ var yml []byte = []byte(`
 bblfshd:
   image: bblfsh/bblfshd:v2.2.0
   volumes:
-    - /home/mcuadros/.engine/bblfshd:/var/lib/bblfshd
+    - {{.Home}}/.engine/bblfshd:/var/lib/bblfshd
   restart: always
   privileged: true
 jupyter:
@@ -54,4 +64,4 @@ jupyter:
   ports:
      - "8080:8888"
   volumes:
-    - /home/mcuadros/.engine/dataset:/repositories`)
+    - {{.Home}}/.engine/dataset:/repositories`)

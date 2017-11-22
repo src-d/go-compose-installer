@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/jessevdk/go-flags"
+	"github.com/sirupsen/logrus"
 )
 
 type Program struct {
@@ -31,6 +31,10 @@ func NewProgram(name string, c *Config) (*Program, error) {
 	parser.AddCommand("stop",
 		c.Stop.Messages.Description, "",
 		&StopCommand{Command: Command{p: p}},
+	)
+	parser.AddCommand("status",
+		c.Status.Messages.Description, "",
+		&StatusCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("uninstall",
 		c.Uninstall.Messages.Description, "",
@@ -58,6 +62,7 @@ type Command struct {
 }
 
 func (c *Command) Execute([]string) error {
+	logrus.SetFormatter(&LogFormatter{})
 	if c.Debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
@@ -70,7 +75,7 @@ type InstallCommand struct {
 }
 
 func (c *InstallCommand) Execute([]string) error {
-	c.Execute(nil)
+	c.Command.Execute(nil)
 	return c.p.Install(context.Background())
 }
 
@@ -79,7 +84,7 @@ type StartCommand struct {
 }
 
 func (c *StartCommand) Execute([]string) error {
-	c.Execute(nil)
+	c.Command.Execute(nil)
 	return c.p.Start(context.Background())
 }
 
@@ -88,8 +93,17 @@ type StopCommand struct {
 }
 
 func (c *StopCommand) Execute([]string) error {
-	c.Execute(nil)
+	c.Command.Execute(nil)
 	return c.p.Stop(context.Background())
+}
+
+type StatusCommand struct {
+	Command
+}
+
+func (c *StatusCommand) Execute([]string) error {
+	c.Command.Execute(nil)
+	return c.p.Status(context.Background())
 }
 
 type UninstallCommand struct {
@@ -98,6 +112,6 @@ type UninstallCommand struct {
 }
 
 func (c *UninstallCommand) Execute([]string) error {
-	c.Execute(nil)
+	c.Command.Execute(nil)
 	return c.p.Uninstall(context.Background(), c.Purge)
 }

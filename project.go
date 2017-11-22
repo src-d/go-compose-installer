@@ -1,8 +1,10 @@
 package pkgr
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"html/template"
 	"io"
 	"os"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/docker/libcompose/logger"
 	"github.com/docker/libcompose/project"
 	"github.com/docker/libcompose/project/options"
+	homedir "github.com/mitchellh/go-homedir"
 )
 
 type Project struct {
@@ -28,13 +31,19 @@ func NewProject(c *Config) (*Project, error) {
 		return nil, err
 	}
 
+	bytes, err := renderComposeFiles(c.Compose)
+	if err != nil {
+		return nil, err
+	}
+
 	compose, err := docker.NewProject(&ctx.Context{
 		Context: project.Context{
 			ProjectName:   c.ProjectName,
-			ComposeBytes:  c.Compose,
+			ComposeBytes:  bytes,
 			LoggerFactory: &logger.RawLogger{},
 		},
 	}, nil)
+
 	if err != nil {
 		return nil, err
 	}
@@ -49,26 +58,53 @@ func NewProject(c *Config) (*Project, error) {
 	}, nil
 }
 
+func renderComposeFiles(files [][]byte) ([][]byte, error) {
+	var err error
+	for i, file := range files {
+		files[i], err = renderComposeFile(file)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return files, nil
+}
+
+func renderComposeFile(file []byte) ([]byte, error) {
+	tmpl, err := template.New("test").Parse(string(file))
+	if err != nil {
+		panic(err)
+	}
+
+	buf := bytes.NewBuffer(nil)
+	home, _ := homedir.Dir()
+	err = tmpl.Execute(buf, map[string]interface{}{
+		"Home": home,
+	})
+
+	return buf.Bytes(), err
+}
+
 func (p *Project) Install(ctx context.Context) error {
-	return p.c.Install.Run(p, p.c, func(*Project, *Config, Wrapper) error {
+	return p.c.Install.Run(p, p.c, func(*Project, *Config) error {
 		return p.Compose.Up(ctx, options.Up{})
 	})
 }
 
 func (p *Project) Start(ctx context.Context) error {
-	return p.c.Start.Run(p, p.c, func(*Project, *Config, Wrapper) error {
+	return p.c.Start.Run(p, p.c, func(*Project, *Config) error {
 		return p.Compose.Start(ctx)
 	})
 }
 
 func (p *Project) Stop(ctx context.Context) error {
-	return p.c.Stop.Run(p, p.c, func(*Project, *Config, Wrapper) error {
+	return p.c.Stop.Run(p, p.c, func(*Project, *Config) error {
 		return p.Compose.Stop(ctx, 0)
 	})
 }
 
 func (p *Project) Uninstall(ctx context.Context, clean bool) error {
-	return p.c.Uninstall.Run(p, p.c, func(*Project, *Config, Wrapper) error {
+	return p.c.Uninstall.Run(p, p.c, func(*Project, *Config) error {
 		if err := p.Compose.Stop(ctx, 0); err != nil {
 			return err
 		}
