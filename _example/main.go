@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/src-d/pkgr"
+	"github.com/src-d/go-compose-installer"
 )
 
 func main() {

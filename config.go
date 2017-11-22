@@ -61,16 +61,18 @@ type Operation struct {
 	Execs    []*Exec
 }
 
-func (c *Operation) Run(p *Project, cfg *Config, a Action) error {
+func (c *Operation) Run(p *Project, cfg *Config, a Action, noExec bool) error {
 	logrus.Infof(c.Messages.Announcement, cfg.ProjectName)
 	if err := a(p, cfg); err != nil {
 		logrus.Fatalf(c.Messages.Failure, cfg.ProjectName, err)
 		return err
 	}
 
-	if err := c.executeExec(p); err != nil {
-		logrus.Fatalf(c.Messages.Failure, cfg.ProjectName, err)
-		return err
+	if !noExec {
+		if err := c.executeExec(p); err != nil {
+			logrus.Fatalf(c.Messages.Failure, cfg.ProjectName, err)
+			return err
+		}
 	}
 
 	logrus.Info(c.Messages.Success, cfg.ProjectName)

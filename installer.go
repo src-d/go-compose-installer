@@ -40,6 +40,7 @@ func New(name string, cfg *Config) (*Installer, error) {
 		fmt.Sprintf(cfg.Uninstall.Messages.Description, cfg.ProjectName), "",
 		&UninstallCommand{Command: Command{p: p}},
 	)
+
 	return &Installer{parser}, nil
 }
 
@@ -57,8 +58,10 @@ func (p *Installer) Run() {
 }
 
 type Command struct {
-	Debug bool `long:"debug" description:"enables the debug mode."`
-	p     *Project
+	Debug  bool `long:"debug" description:"enables the debug mode."`
+	NoExec bool `long:"no-exec" description:"disable any execution after the action."`
+
+	p *Project
 }
 
 func (c *Command) Execute([]string) error {
@@ -76,7 +79,9 @@ type InstallCommand struct {
 
 func (c *InstallCommand) Execute([]string) error {
 	c.Command.Execute(nil)
-	return c.p.Install(context.Background())
+	return c.p.Install(context.Background(), &InstallOptions{
+		NoExec: c.NoExec,
+	})
 }
 
 type StartCommand struct {
@@ -85,7 +90,9 @@ type StartCommand struct {
 
 func (c *StartCommand) Execute([]string) error {
 	c.Command.Execute(nil)
-	return c.p.Start(context.Background())
+	return c.p.Start(context.Background(), &StartOptions{
+		NoExec: c.NoExec,
+	})
 }
 
 type StopCommand struct {
@@ -94,7 +101,9 @@ type StopCommand struct {
 
 func (c *StopCommand) Execute([]string) error {
 	c.Command.Execute(nil)
-	return c.p.Stop(context.Background())
+	return c.p.Stop(context.Background(), &StopOptions{
+		NoExec: c.NoExec,
+	})
 }
 
 type StatusCommand struct {
@@ -113,5 +122,8 @@ type UninstallCommand struct {
 
 func (c *UninstallCommand) Execute([]string) error {
 	c.Command.Execute(nil)
-	return c.p.Uninstall(context.Background(), c.Purge)
+	return c.p.Uninstall(context.Background(), &UninstallOptions{
+		NoExec: c.NoExec,
+		Purge:  c.Purge,
+	})
 }

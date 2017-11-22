@@ -85,10 +85,10 @@ func renderComposeFile(file []byte) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (p *Project) Install(ctx context.Context) error {
+func (p *Project) Install(ctx context.Context, opts *InstallOptions) error {
 	return p.c.Install.Run(p, p.c, func(*Project, *Config) error {
 		return p.Compose.Up(ctx, options.Up{})
-	})
+	}, opts.NoExec)
 }
 
 func (p *Project) isInstalled(ctx context.Context) error {
@@ -104,27 +104,27 @@ func (p *Project) isInstalled(ctx context.Context) error {
 	return fmt.Errorf("%s is not installed, run install first", p.c.ProjectName)
 }
 
-func (p *Project) Start(ctx context.Context) error {
+func (p *Project) Start(ctx context.Context, opts *StartOptions) error {
 	return p.c.Start.Run(p, p.c, func(*Project, *Config) error {
 		if err := p.isInstalled(ctx); err != nil {
 			return err
 		}
 
 		return p.Compose.Start(ctx)
-	})
+	}, opts.NoExec)
 }
 
-func (p *Project) Stop(ctx context.Context) error {
+func (p *Project) Stop(ctx context.Context, opts *StopOptions) error {
 	return p.c.Stop.Run(p, p.c, func(*Project, *Config) error {
 		if err := p.isInstalled(ctx); err != nil {
 			return err
 		}
 
 		return p.Compose.Stop(ctx, 0)
-	})
+	}, opts.NoExec)
 }
 
-func (p *Project) Uninstall(ctx context.Context, clean bool) error {
+func (p *Project) Uninstall(ctx context.Context, opts *UninstallOptions) error {
 	return p.c.Uninstall.Run(p, p.c, func(*Project, *Config) error {
 		if err := p.isInstalled(ctx); err != nil {
 			return err
@@ -134,14 +134,14 @@ func (p *Project) Uninstall(ctx context.Context, clean bool) error {
 			return err
 		}
 
-		opts := options.Down{}
-		if clean {
-			opts.RemoveImages = "all"
-			opts.RemoveVolume = true
+		d := options.Down{}
+		if opts.Purge {
+			d.RemoveImages = "all"
+			d.RemoveVolume = true
 		}
 
-		return p.Compose.Down(ctx, opts)
-	})
+		return p.Compose.Down(ctx, d)
+	}, opts.NoExec)
 }
 
 func (p *Project) Status(ctx context.Context) error {
