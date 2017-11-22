@@ -23,13 +23,13 @@ func main() {
 	c.Start.Messages = pkgr.Messages{
 		Description:  "Stars engine.",
 		Announcement: "Starting Engine...",
-		Failure:      "Failed to start Engine.",
+		Failure:      "Failed to start Engine: %s.",
 		Success:      "Engine started.",
 	}
 	c.Stop.Messages = pkgr.Messages{
 		Description:  "Stops engine.",
 		Announcement: "Stopping Engine...",
-		Failure:      "Failed to stop Engine.",
+		Failure:      "Failed to stop Engine: %s.",
 		Success:      "Engine stopped.",
 	}
 
@@ -40,7 +40,7 @@ func main() {
 	c.Uninstall.Messages = pkgr.Messages{
 		Description:  "Remove engine from your system.",
 		Announcement: "Uninstalling Engine...",
-		Failure:      "Failed to uninstall Engine.",
+		Failure:      "Failed to uninstall Engine: %s.",
 		Success:      "Successfully uninstalled.",
 	}
 

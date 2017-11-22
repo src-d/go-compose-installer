@@ -91,20 +91,45 @@ func (p *Project) Install(ctx context.Context) error {
 	})
 }
 
+func (p *Project) isInstalled(ctx context.Context) error {
+	info, err := p.Compose.Ps(ctx)
+	if err != nil {
+		return err
+	}
+
+	if len(info) != 0 {
+		return nil
+	}
+
+	return fmt.Errorf("%s is not installed, run install first", p.c.ProjectName)
+}
+
 func (p *Project) Start(ctx context.Context) error {
 	return p.c.Start.Run(p, p.c, func(*Project, *Config) error {
+		if err := p.isInstalled(ctx); err != nil {
+			return err
+		}
+
 		return p.Compose.Start(ctx)
 	})
 }
 
 func (p *Project) Stop(ctx context.Context) error {
 	return p.c.Stop.Run(p, p.c, func(*Project, *Config) error {
+		if err := p.isInstalled(ctx); err != nil {
+			return err
+		}
+
 		return p.Compose.Stop(ctx, 0)
 	})
 }
 
 func (p *Project) Uninstall(ctx context.Context, clean bool) error {
 	return p.c.Uninstall.Run(p, p.c, func(*Project, *Config) error {
+		if err := p.isInstalled(ctx); err != nil {
+			return err
+		}
+
 		if err := p.Compose.Stop(ctx, 0); err != nil {
 			return err
 		}

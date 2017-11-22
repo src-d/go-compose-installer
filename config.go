@@ -25,18 +25,18 @@ type Operation struct {
 }
 
 func (c *Operation) Run(p *Project, cfg *Config, a Action) error {
-	logrus.Warn(c.Messages.Announcement)
+	logrus.Info(c.Messages.Announcement)
 	if err := a(p, cfg); err != nil {
-		logrus.Fatal(c.Messages.Failure)
+		logrus.Fatalf(c.Messages.Failure, err)
 		return err
 	}
 
 	if err := c.executeExec(p); err != nil {
-		logrus.Fatal(err)
+		logrus.Fatalf(c.Messages.Failure, err)
 		return err
 	}
 
-	logrus.Warn(c.Messages.Success)
+	logrus.Info(c.Messages.Success)
 	return nil
 }
 
