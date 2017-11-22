@@ -13,31 +13,31 @@ type Program struct {
 	Parser *flags.Parser
 }
 
-func NewProgram(name string, c *Config) (*Program, error) {
-	p, err := NewProject(c)
+func NewProgram(name string, cfg *Config) (*Program, error) {
+	p, err := NewProject(cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	parser := flags.NewNamedParser(name, flags.Default)
 	parser.AddCommand("install",
-		c.Install.Messages.Description, "",
+		fmt.Sprintf(cfg.Install.Messages.Description, cfg.ProjectName), "",
 		&InstallCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("start",
-		c.Start.Messages.Description, "",
+		fmt.Sprintf(cfg.Start.Messages.Description, cfg.ProjectName), "",
 		&StartCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("stop",
-		c.Stop.Messages.Description, "",
+		fmt.Sprintf(cfg.Stop.Messages.Description, cfg.ProjectName), "",
 		&StopCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("status",
-		c.Status.Messages.Description, "",
+		fmt.Sprintf(cfg.Status.Messages.Description, cfg.ProjectName), "",
 		&StatusCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("uninstall",
-		c.Uninstall.Messages.Description, "",
+		fmt.Sprintf(cfg.Uninstall.Messages.Description, cfg.ProjectName), "",
 		&UninstallCommand{Command: Command{p: p}},
 	)
 	return &Program{parser}, nil

@@ -5,46 +5,15 @@ import (
 )
 
 func main() {
-	c := &pkgr.Config{}
-	c.ProjectName = "engine"
-	c.Compose = [][]byte{yml}
-	c.Install.Messages = pkgr.Messages{
-		Description:  "Installs engine into your system.",
-		Announcement: "Installing Engine...",
-		Failure:      "Failed to install Engine.",
-		Success:      "Successfully installed.",
-	}
-
-	c.Install.Execs = []*pkgr.Exec{{
+	cfg := pkgr.NewDefaultConfig()
+	cfg.ProjectName = "engine"
+	cfg.Compose = [][]byte{yml}
+	cfg.Install.Execs = []*pkgr.Exec{{
 		Service: "bblfshd",
 		Cmd:     []string{"bblfshctl", "driver", "install", "--all", "--update"},
 	}}
 
-	c.Start.Messages = pkgr.Messages{
-		Description:  "Stars engine.",
-		Announcement: "Starting Engine...",
-		Failure:      "Failed to start Engine: %s.",
-		Success:      "Engine started.",
-	}
-	c.Stop.Messages = pkgr.Messages{
-		Description:  "Stops engine.",
-		Announcement: "Stopping Engine...",
-		Failure:      "Failed to stop Engine: %s.",
-		Success:      "Engine stopped.",
-	}
-
-	c.Status.Messages = pkgr.Messages{
-		Description: "Show the status of engine.",
-	}
-
-	c.Uninstall.Messages = pkgr.Messages{
-		Description:  "Remove engine from your system.",
-		Announcement: "Uninstalling Engine...",
-		Failure:      "Failed to uninstall Engine: %s.",
-		Success:      "Successfully uninstalled.",
-	}
-
-	p, err := pkgr.NewProgram("engine-installer", c)
+	p, err := pkgr.NewProgram("engine-installer", cfg)
 	if err != nil {
 		panic(err)
 	}

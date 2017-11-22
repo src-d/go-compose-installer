@@ -8,6 +8,43 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func NewDefaultConfig() *Config {
+	cfg := &Config{}
+	cfg.Install.Messages = Messages{
+		Description:  "Installs %s into your system.",
+		Announcement: "Installing %s...",
+		Failure:      "Failed to install %s.",
+		Success:      "Successfully installed.",
+	}
+
+	cfg.Start.Messages = Messages{
+		Description:  "Stars %s.",
+		Announcement: "Starting %s...",
+		Failure:      "Failed to start %s: %s.",
+		Success:      "%s started.",
+	}
+
+	cfg.Stop.Messages = Messages{
+		Description:  "Stops %s.",
+		Announcement: "Stopping %s...",
+		Failure:      "Failed to stop %s: %s.",
+		Success:      "%s stopped.",
+	}
+
+	cfg.Status.Messages = Messages{
+		Description: "Show the status of %s.",
+	}
+
+	cfg.Uninstall.Messages = Messages{
+		Description:  "Remove %s from your system.",
+		Announcement: "Uninstalling %s...",
+		Failure:      "Failed to uninstall %s: %s.",
+		Success:      "Successfully uninstalled.",
+	}
+
+	return cfg
+}
+
 type Config struct {
 	ProjectName string
 	Compose     [][]byte
@@ -25,18 +62,18 @@ type Operation struct {
 }
 
 func (c *Operation) Run(p *Project, cfg *Config, a Action) error {
-	logrus.Info(c.Messages.Announcement)
+	logrus.Infof(c.Messages.Announcement, cfg.ProjectName)
 	if err := a(p, cfg); err != nil {
-		logrus.Fatalf(c.Messages.Failure, err)
+		logrus.Fatalf(c.Messages.Failure, cfg.ProjectName, err)
 		return err
 	}
 
 	if err := c.executeExec(p); err != nil {
-		logrus.Fatalf(c.Messages.Failure, err)
+		logrus.Fatalf(c.Messages.Failure, cfg.ProjectName, err)
 		return err
 	}
 
-	logrus.Info(c.Messages.Success)
+	logrus.Info(c.Messages.Success, cfg.ProjectName)
 	return nil
 }
 
