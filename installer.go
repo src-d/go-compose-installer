@@ -9,6 +9,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func init() {
+	logrus.SetFormatter(&LogFormatter{})
+}
+
 type Installer struct {
 	Parser *flags.Parser
 }
@@ -65,7 +69,6 @@ type Command struct {
 }
 
 func (c *Command) Execute([]string) error {
-	logrus.SetFormatter(&LogFormatter{})
 	if c.Debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}

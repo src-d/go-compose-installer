@@ -27,7 +27,11 @@ services:
   bblfshd:
     image: bblfsh/bblfshd:v2.2.0
     volumes:
+{{- if eq .OS "linux"}}
       - {{.Home}}/.engine/bblfshd:/var/lib/bblfshd
+{{- else}}
+      - /var/lib/bblfshd
+{{- end}}
     restart: always
     privileged: true
   jupyter:

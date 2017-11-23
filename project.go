@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"os"
 	"runtime"
 
@@ -17,6 +18,12 @@ import (
 	"github.com/docker/libcompose/project"
 	"github.com/docker/libcompose/project/options"
 	"github.com/mitchellh/go-homedir"
+	"github.com/sirupsen/logrus"
+)
+
+const (
+	// EnvComposeFile overrides the built-in composer file.
+	EnvComposeFile = "INSTALLER_COMPOSE"
 )
 
 type Project struct {
@@ -60,6 +67,8 @@ func NewProject(c *Config) (*Project, error) {
 }
 
 func renderComposeFiles(files [][]byte) ([][]byte, error) {
+	files = overrideComposeFiles(files)
+
 	var err error
 	for i, file := range files {
 		files[i], err = renderComposeFile(file)
@@ -69,6 +78,20 @@ func renderComposeFiles(files [][]byte) ([][]byte, error) {
 	}
 
 	return files, nil
+}
+
+func overrideComposeFiles(files [][]byte) [][]byte {
+	file := os.Getenv(EnvComposeFile)
+	if file == "" {
+		return files
+	}
+
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	return [][]byte{content}
 }
 
 func renderComposeFile(file []byte) ([]byte, error) {
