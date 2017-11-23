@@ -22,15 +22,18 @@ func main() {
 }
 
 var yml []byte = []byte(`
-bblfshd:
-  image: bblfsh/bblfshd:v2.2.0
-  volumes:
-    - {{.Home}}/.engine/bblfshd:/var/lib/bblfshd
-  restart: always
-  privileged: true
-jupyter:
-  image: srcd/engine-jupyter:latest
-  ports:
-     - "8080:8888"
-  volumes:
-    - {{.Home}}/.engine/dataset:/repositories`)
+version: '2'
+services:
+  bblfshd:
+    image: bblfsh/bblfshd:v2.2.0
+    volumes:
+      - {{.Home}}/.engine/bblfshd:/var/lib/bblfshd
+    restart: always
+    privileged: true
+  jupyter:
+    image: jfontan/engine-jupyter:latest
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - {{.Home}}/.engine/dataset:/repositories
+`)

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"os"
+	"runtime"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -80,6 +81,8 @@ func renderComposeFile(file []byte) ([]byte, error) {
 	home, _ := homedir.Dir()
 	err = tmpl.Execute(buf, map[string]interface{}{
 		"Home": home,
+		"OS":   runtime.GOOS,
+		"Arch": runtime.GOARCH,
 	})
 
 	return buf.Bytes(), err
@@ -126,8 +129,10 @@ func (p *Project) Stop(ctx context.Context, opts *StopOptions) error {
 
 func (p *Project) Uninstall(ctx context.Context, opts *UninstallOptions) error {
 	return p.c.Uninstall.Run(p, p.c, func(*Project, *Config) error {
-		if err := p.isInstalled(ctx); err != nil {
-			return err
+		if !opts.Force {
+			if err := p.isInstalled(ctx); err != nil {
+				return err
+			}
 		}
 
 		if err := p.Compose.Stop(ctx, 0); err != nil {

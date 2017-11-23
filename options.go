@@ -20,4 +20,6 @@ type UninstallOptions struct {
 	NoExec bool
 	// Purge remove all the installed images and volumes.
 	Purge bool
+	// Force force the un-installation even if an installation is not detected.
+	Force bool
 }

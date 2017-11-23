@@ -117,6 +117,7 @@ func (c *StatusCommand) Execute([]string) error {
 
 type UninstallCommand struct {
 	Purge bool `long:"purge" description:"remove the docker images and volumes."`
+	Force bool `long:"force" description:"force the uninstall process."`
 	Command
 }
 
@@ -125,5 +126,6 @@ func (c *UninstallCommand) Execute([]string) error {
 	return c.p.Uninstall(context.Background(), &UninstallOptions{
 		NoExec: c.NoExec,
 		Purge:  c.Purge,
+		Force:  c.Force,
 	})
 }
