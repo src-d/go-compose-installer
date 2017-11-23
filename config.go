@@ -13,8 +13,8 @@ func NewDefaultConfig() *Config {
 	cfg.Install.Messages = Messages{
 		Description:  "Installs %s into your system.",
 		Announcement: "Installing %s...",
-		Failure:      "Failed to install %s.",
-		Success:      "Successfully installed.",
+		Failure:      "Failed to install %s: %s.",
+		Success:      "%s was successfully installed.",
 	}
 
 	cfg.Start.Messages = Messages{
@@ -39,7 +39,7 @@ func NewDefaultConfig() *Config {
 		Description:  "Remove %s from your system.",
 		Announcement: "Uninstalling %s...",
 		Failure:      "Failed to uninstall %s: %s.",
-		Success:      "Successfully uninstalled.",
+		Success:      "%s was successfully uninstalled.",
 	}
 
 	return cfg
@@ -75,7 +75,7 @@ func (c *Operation) Run(p *Project, cfg *Config, a Action, noExec bool) error {
 		}
 	}
 
-	logrus.Info(c.Messages.Success, cfg.ProjectName)
+	logrus.Infof(c.Messages.Success, cfg.ProjectName)
 	return nil
 }
 

@@ -95,7 +95,7 @@ func overrideComposeFiles(files [][]byte) [][]byte {
 }
 
 func renderComposeFile(file []byte) ([]byte, error) {
-	tmpl, err := template.New("test").Parse(string(file))
+	tmpl, err := template.New("compose").Parse(string(file))
 	if err != nil {
 		panic(err)
 	}
