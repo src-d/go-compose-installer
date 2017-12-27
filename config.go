@@ -3,7 +3,6 @@ package installer
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -61,6 +60,8 @@ type Operation struct {
 	Execs    []*Exec
 }
 
+var DefaultShell = []string{"/bin/sh", "-c"}
+
 func (c *Operation) Run(p *Project, cfg *Config, a Action, noExec bool) error {
 	logrus.Infof(c.Messages.Announcement, cfg.ProjectName)
 	if err := a(p, cfg); err != nil {
@@ -81,9 +82,10 @@ func (c *Operation) Run(p *Project, cfg *Config, a Action, noExec bool) error {
 
 func (c *Operation) executeExec(p *Project) error {
 	for _, e := range c.Execs {
-		if err := p.Execute(context.Background(), e.Service, e.Cmd...); err != nil {
-			return fmt.Errorf("error executing %q in %s:%s", strings.Join(e.Cmd, " "), e.Service, err)
+		if err := p.Execute(context.Background(), e.Service, "sh", "-c", e.Cmd); err != nil {
+			return fmt.Errorf("error executing %q in %s:%s", e.Cmd, e.Service, err)
 		}
+
 	}
 
 	return nil
@@ -98,7 +100,7 @@ type Messages struct {
 
 type Exec struct {
 	Service string
-	Cmd     []string
+	Cmd     string
 }
 
 type Action func(*Project, *Config) error
