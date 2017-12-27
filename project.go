@@ -34,53 +34,53 @@ type Project struct {
 }
 
 func NewProject(c *Config) (*Project, error) {
-	cli, err := client.NewEnvClient()
+	p := &Project{c: c}
+	return p, p.initialize()
+}
+
+func (p *Project) initialize() error {
+	var err error
+	p.Docker, err = client.NewEnvClient()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	bytes, err := renderComposeFiles(c.Compose)
+	bytes, err := p.renderComposeFiles(p.c.Compose)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	compose, err := docker.NewProject(&ctx.Context{
+	p.Compose, err = docker.NewProject(&ctx.Context{
 		Context: project.Context{
-			ProjectName:   c.ProjectName,
+			ProjectName:   p.c.ProjectName,
 			ComposeBytes:  bytes,
 			LoggerFactory: &logger.RawLogger{},
 		},
 	}, nil)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	compose.AddListener(NewListener(compose.(*project.Project)))
-
-	return &Project{
-		Compose: compose,
-		Docker:  cli,
-
-		c: c,
-	}, nil
+	p.Compose.AddListener(NewListener(p.Compose.(*project.Project)))
+	return nil
 }
 
-func renderComposeFiles(files [][]byte) ([][]byte, error) {
-	files = overrideComposeFiles(files)
-
-	var err error
+func (p *Project) renderComposeFiles(files [][]byte) ([][]byte, error) {
+	files = p.overrideComposeFiles(files)
 	for i, file := range files {
-		files[i], err = renderComposeFile(file)
+		c, err := p.RenderTemplate(string(file), nil)
 		if err != nil {
 			return nil, err
 		}
+
+		files[i] = []byte(c)
 	}
 
 	return files, nil
 }
 
-func overrideComposeFiles(files [][]byte) [][]byte {
+func (p *Project) overrideComposeFiles(files [][]byte) [][]byte {
 	file := os.Getenv(EnvComposeFile)
 	if file == "" {
 		return files
@@ -92,23 +92,6 @@ func overrideComposeFiles(files [][]byte) [][]byte {
 	}
 
 	return [][]byte{content}
-}
-
-func renderComposeFile(file []byte) ([]byte, error) {
-	tmpl, err := template.New("compose").Parse(string(file))
-	if err != nil {
-		panic(err)
-	}
-
-	buf := bytes.NewBuffer(nil)
-	home, _ := homedir.Dir()
-	err = tmpl.Execute(buf, map[string]interface{}{
-		"Home": home,
-		"OS":   runtime.GOOS,
-		"Arch": runtime.GOARCH,
-	})
-
-	return buf.Bytes(), err
 }
 
 func (p *Project) Install(ctx context.Context, opts *InstallOptions) error {
@@ -230,4 +213,38 @@ func (p *Project) doExecute(ctx context.Context, containerID string, cmd []strin
 	}
 
 	return err
+}
+
+func (p *Project) MustRenderTemplate(tmpl string, vars map[string]interface{}) string {
+	v, err := p.RenderTemplate(tmpl, vars)
+	if err != nil {
+		panic(err)
+	}
+
+	return v
+}
+
+func (p *Project) RenderTemplate(tmpl string, vars map[string]interface{}) (string, error) {
+	t, err := template.New("compose").Parse(tmpl)
+	if err != nil {
+		return "", err
+	}
+
+	if vars == nil {
+		vars = map[string]interface{}{}
+	}
+
+	vars["Project"] = p.c.ProjectName
+	vars["Home"], _ = homedir.Dir()
+	vars["OS"] = runtime.GOOS
+	vars["Arch"] = runtime.GOARCH
+
+	buf := bytes.NewBuffer(nil)
+	err = t.Execute(buf, vars)
+
+	return buf.String(), err
+}
+
+func ErrorToMap(err error) map[string]interface{} {
+	return map[string]interface{}{"Error": err.Error()}
 }

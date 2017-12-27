@@ -10,35 +10,35 @@ import (
 func NewDefaultConfig() *Config {
 	cfg := &Config{}
 	cfg.Install.Messages = Messages{
-		Description:  "Installs %s into your system.",
-		Announcement: "Installing %s...",
-		Failure:      "Failed to install %s: %s.",
-		Success:      "%s was successfully installed.",
+		Description:  "Installs {{.Project}} into your system.",
+		Announcement: "Installing {{.Project}}...",
+		Failure:      "Failed to install {{.Project}}: {{.Error}} .",
+		Success:      "{{.Project}} was successfully installed.",
 	}
 
 	cfg.Start.Messages = Messages{
-		Description:  "Stars %s.",
-		Announcement: "Starting %s...",
-		Failure:      "Failed to start %s: %s.",
-		Success:      "%s started.",
+		Description:  "Stars {{.Project}}.",
+		Announcement: "Starting {{.Project}}...",
+		Failure:      "Failed to start {{.Project}}: {{.Error}}.",
+		Success:      "{{.Project}} started.",
 	}
 
 	cfg.Stop.Messages = Messages{
-		Description:  "Stops %s.",
-		Announcement: "Stopping %s...",
-		Failure:      "Failed to stop %s: %s.",
-		Success:      "%s stopped.",
+		Description:  "Stops {{.Project}}.",
+		Announcement: "Stopping {{.Project}}...",
+		Failure:      "Failed to stop {{.Project}}: {{.Error}}.",
+		Success:      "{{.Project}} stopped.",
 	}
 
 	cfg.Status.Messages = Messages{
-		Description: "Show the status of %s.",
+		Description: "Show the status of {{.Project}}.",
 	}
 
 	cfg.Uninstall.Messages = Messages{
-		Description:  "Remove %s from your system.",
-		Announcement: "Uninstalling %s...",
-		Failure:      "Failed to uninstall %s: %s.",
-		Success:      "%s was successfully uninstalled.",
+		Description:  "Remove {{.Project}} from your system.",
+		Announcement: "Uninstalling {{.Project}}...",
+		Failure:      "Failed to uninstall {{.Project}}: {{.Error}}.",
+		Success:      "{{.Project}} was successfully uninstalled.",
 	}
 
 	return cfg
@@ -63,20 +63,20 @@ type Operation struct {
 var DefaultShell = []string{"/bin/sh", "-c"}
 
 func (c *Operation) Run(p *Project, cfg *Config, a Action, noExec bool) error {
-	logrus.Infof(c.Messages.Announcement, cfg.ProjectName)
+	logrus.Info(p.MustRenderTemplate(c.Messages.Announcement, nil))
 	if err := a(p, cfg); err != nil {
-		logrus.Fatalf(c.Messages.Failure, cfg.ProjectName, err)
+		logrus.Fatal(p.MustRenderTemplate(c.Messages.Failure, ErrorToMap(err)))
 		return err
 	}
 
 	if !noExec {
 		if err := c.executeExec(p); err != nil {
-			logrus.Fatalf(c.Messages.Failure, cfg.ProjectName, err)
+			logrus.Fatal(p.MustRenderTemplate(c.Messages.Failure, ErrorToMap(err)))
 			return err
 		}
 	}
 
-	logrus.Infof(c.Messages.Success, cfg.ProjectName)
+	logrus.Info(p.MustRenderTemplate(c.Messages.Success, nil))
 	return nil
 }
 

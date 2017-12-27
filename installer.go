@@ -25,23 +25,23 @@ func New(name string, cfg *Config) (*Installer, error) {
 
 	parser := flags.NewNamedParser(name, flags.Default)
 	parser.AddCommand("install",
-		fmt.Sprintf(cfg.Install.Messages.Description, cfg.ProjectName), "",
+		p.MustRenderTemplate(cfg.Install.Messages.Description, nil), "",
 		&InstallCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("start",
-		fmt.Sprintf(cfg.Start.Messages.Description, cfg.ProjectName), "",
+		p.MustRenderTemplate(cfg.Start.Messages.Description, nil), "",
 		&StartCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("stop",
-		fmt.Sprintf(cfg.Stop.Messages.Description, cfg.ProjectName), "",
+		p.MustRenderTemplate(cfg.Stop.Messages.Description, nil), "",
 		&StopCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("status",
-		fmt.Sprintf(cfg.Status.Messages.Description, cfg.ProjectName), "",
+		p.MustRenderTemplate(cfg.Status.Messages.Description, nil), "",
 		&StatusCommand{Command: Command{p: p}},
 	)
 	parser.AddCommand("uninstall",
-		fmt.Sprintf(cfg.Uninstall.Messages.Description, cfg.ProjectName), "",
+		p.MustRenderTemplate(cfg.Uninstall.Messages.Description, nil), "",
 		&UninstallCommand{Command: Command{p: p}},
 	)
 
