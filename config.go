@@ -7,6 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// NewDefaultConfig returns a Config object will all Messages already configured
+// with standard text suitable for any application.
 func NewDefaultConfig() *Config {
 	cfg := &Config{}
 	cfg.Install.Messages = Messages{
@@ -44,6 +46,7 @@ func NewDefaultConfig() *Config {
 	return cfg
 }
 
+// Config contains all the messages and exec operations for each command.
 type Config struct {
 	ProjectName string
 	Compose     [][]byte
@@ -91,11 +94,16 @@ func (c *Operation) executeExec(p *Project) error {
 	return nil
 }
 
+// Messages are the message to be printed after, before, etc, every command.
 type Messages struct {
-	Description  string
+	// Description to be shown in the help of the command.
+	Description string
+	// Announcement information shown before execute the command.
 	Announcement string
-	Failure      string
-	Success      string
+	// Failure is the text to be shown just after an error happend.
+	Failure string
+	// Success in case of a successfully execution.
+	Success string
 }
 
 type Exec struct {

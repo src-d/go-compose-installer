@@ -26,6 +26,7 @@ const (
 	EnvComposeFile = "INSTALLER_COMPOSE"
 )
 
+// Project performs all the operations at docker compose level.
 type Project struct {
 	Compose project.APIProject
 	Docker  *client.Client
@@ -33,6 +34,7 @@ type Project struct {
 	c *Config
 }
 
+// NewProject returns a new Project based on the given Config.
 func NewProject(c *Config) (*Project, error) {
 	p := &Project{c: c}
 	return p, p.initialize()
@@ -163,6 +165,10 @@ func (p *Project) Status(ctx context.Context) error {
 
 func (p *Project) Execute(ctx context.Context, service string, cmd ...string) error {
 	srv, err := p.Compose.CreateService(service) //, options.Run{Detached: true})
+	if err != nil {
+		return err
+	}
+
 	cs, err := srv.Containers(ctx)
 	if err != nil {
 		return err

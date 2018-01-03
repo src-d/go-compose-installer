@@ -13,10 +13,13 @@ func init() {
 	logrus.SetFormatter(&LogFormatter{})
 }
 
+// Installer represent the CLI application based on `go-flags` providing all the
+// core commands: `install`, `start`, `stop` and `uninstall`.
 type Installer struct {
 	Parser *flags.Parser
 }
 
+// New returns a new Installer instance based on the given name and *Config.
 func New(name string, cfg *Config) (*Installer, error) {
 	p, err := NewProject(cfg)
 	if err != nil {
@@ -48,6 +51,8 @@ func New(name string, cfg *Config) (*Installer, error) {
 	return &Installer{parser}, nil
 }
 
+// Run executes the CLI application, in a standard usage this function should be
+// called form a main.main function. It `os.Exit` after be executed.
 func (p *Installer) Run() {
 	if _, err := p.Parser.Parse(); err != nil {
 		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
@@ -55,12 +60,14 @@ func (p *Installer) Run() {
 		} else {
 			fmt.Println()
 			p.Parser.WriteHelp(os.Stdout)
-			//fmt.Printf("\nBuild information\n  commit: %s\n  date: %s\n", version, build)
 			os.Exit(1)
 		}
 	}
 }
 
+// Command defines a the base CLI command. It implements the non-interface for
+// a command, for go-flags, where a `Execute([]string) error` is expected.
+// The flags defined here are common to any other command.
 type Command struct {
 	Debug  bool `long:"debug" description:"enables the debug mode."`
 	NoExec bool `long:"no-exec" description:"disable any execution after the action."`
@@ -68,6 +75,7 @@ type Command struct {
 	p *Project
 }
 
+// Execute execute the command, to be shadowed by specific implementations.
 func (c *Command) Execute([]string) error {
 	if c.Debug {
 		logrus.SetLevel(logrus.DebugLevel)
@@ -76,6 +84,7 @@ func (c *Command) Execute([]string) error {
 	return nil
 }
 
+// InstallCommand defines the "install" command from the installer.
 type InstallCommand struct {
 	Command
 }
@@ -87,6 +96,7 @@ func (c *InstallCommand) Execute([]string) error {
 	})
 }
 
+// StartCommand defines the "start" command from the installer.
 type StartCommand struct {
 	Command
 }
@@ -98,6 +108,7 @@ func (c *StartCommand) Execute([]string) error {
 	})
 }
 
+// StopCommand defines the "stop" command from the installer.
 type StopCommand struct {
 	Command
 }
@@ -109,6 +120,7 @@ func (c *StopCommand) Execute([]string) error {
 	})
 }
 
+// StatusCommand defines the "status" command from the installer.
 type StatusCommand struct {
 	Command
 }
@@ -118,6 +130,7 @@ func (c *StatusCommand) Execute([]string) error {
 	return c.p.Status(context.Background())
 }
 
+// UninstallCommand defines the "uninstall" command from the installer.
 type UninstallCommand struct {
 	Purge bool `long:"purge" description:"remove the docker images and volumes."`
 	Force bool `long:"force" description:"force the uninstall process."`
