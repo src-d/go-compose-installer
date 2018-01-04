@@ -245,6 +245,10 @@ func (p *Project) RenderTemplate(tmpl string, vars map[string]interface{}) (stri
 	vars["OS"] = runtime.GOOS
 	vars["Arch"] = runtime.GOARCH
 
+	for k, v := range p.c.TemplateVars {
+		vars[k] = v
+	}
+
 	buf := bytes.NewBuffer(nil)
 	err = t.Execute(buf, vars)
 

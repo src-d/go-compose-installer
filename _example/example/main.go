@@ -15,6 +15,12 @@ func main() {
 	// Compose YAML content, a standard docker compose version 2 file.
 	cfg.Compose = [][]byte{yml}
 
+	// The defined YAML, contains a template, some variables are not standard
+	// variables, so we need to define it at the `Config.TemplateVars` field.
+	cfg.TemplateVars = map[string]interface{}{
+		"RedisTag": "4.0.6-alpine",
+	}
+
 	// Customized message for a success installation.
 	cfg.Install.Messages.Success = "" +
 		"The example was successfully installed!\n\n" +
@@ -45,5 +51,5 @@ services:
     ports:
      - "5000:5000"
   redis:
-    image: "redis:alpine"
+    image: "redis:{{.RedisTag}}"
 `)

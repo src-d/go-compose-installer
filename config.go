@@ -48,14 +48,23 @@ func NewDefaultConfig() *Config {
 
 // Config contains all the messages and exec operations for each command.
 type Config struct {
+	// ProjectName is the name given to the project being installed.
 	ProjectName string
-	Compose     [][]byte
-
-	Install   Operation
+	// Compose is the content of one or more docker compose files in YAML format.
+	Compose [][]byte
+	// TemplateVars are custom defined variable to be replace on the values
+	// supporting templates, such as docker compose files or text messages.
+	TemplateVars map[string]interface{}
+	// Install operation configuration.
+	Install Operation
+	// Uninstall operation configuration.
 	Uninstall Operation
-	Status    Operation
-	Start     Operation
-	Stop      Operation
+	// Status operation configuration.
+	Status Operation
+	// Start operation configuration.
+	Start Operation
+	// Stop operation configuration.
+	Stop Operation
 }
 
 type Operation struct {

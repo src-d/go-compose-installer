@@ -27,6 +27,12 @@ func main() {
 	// Compose YAML content, a standard docker compose version 2 file.
 	cfg.Compose = [][]byte{yml}
 
+	// The defined YAML, contains a template, some variables are not standard
+	// variables, so we need to define it at the `Config.TemplateVars` field.
+	cfg.TemplateVars = map[string]interface{}{
+		"RedisTag": "4.0.6-alpine",
+	}
+
 	// Customized message for a success installation.
 	cfg.Install.Messages.Success = "" +
 		"The example was successfully installed!\n\n" +
@@ -57,9 +63,8 @@ services:
     ports:
      - "5000:5000"
   redis:
-    image: "redis:alpine"
+    image: "redis:{{.RedisTag}}"
 `)
-
 ```
 
 The following code provides an CLI application allowing to anyone with just one
@@ -83,8 +88,12 @@ Available commands:
 
 ## Go Template support
 
-Go templates are supported in the yaml file and also at all the messages. This
-is the list of supported variables:
+Go templates are supported in the yaml file and also at all the messages.
+
+The Template variables can be configured at the `Config.TemplateVars`, additionally
+to the custom defined variables some other variables are defined by default.
+
+This is the list of default variables:
 
 - `.Project` - The project name, from the given `Config.ProjectName`.
 - `.Home` - Home folder of the user executing the installer.
