@@ -200,7 +200,7 @@ func (p *Project) doExecute(ctx context.Context, containerID string, cmd []strin
 		return err
 	}
 
-	r, err := p.Docker.ContainerExecAttach(ctx, id.ID, cfg)
+	r, err := p.Docker.ContainerExecAttach(ctx, id.ID, types.ExecStartCheck{})
 	if err != nil {
 		return err
 	}
